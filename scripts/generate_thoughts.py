@@ -2,7 +2,7 @@ import os
 import json
 from google import genai
 
-# 使用 Gemini 模型
+# Gemini 模型
 MODEL = "gemini-2.5-flash-lite"
 
 # 讀取題目
@@ -38,8 +38,8 @@ Output structure:
 7. 常見錯誤與陷阱
 """
 
-# 使用 API key 初始化
-client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
+# 使用 JSON 檔初始化 Gemini 客戶端
+client = genai.Client(api_key="./service_account.json")
 
 # 呼叫 Gemini API 生成內容
 resp = client.models.generate_content(
