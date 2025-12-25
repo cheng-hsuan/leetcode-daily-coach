@@ -39,7 +39,9 @@ Output structure:
 """
 
 # 使用 JSON 檔初始化 Gemini 客戶端
-client = genai.Client(api_key="./service_account.json")
+client = genai.Client(
+    api_key=os.environ["GOOGLE_API_KEY"]
+)
 
 # 呼叫 Gemini API 生成內容
 resp = client.models.generate_content(

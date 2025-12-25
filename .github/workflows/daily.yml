@@ -2,8 +2,7 @@ name: LeetCode Daily Coach
 
 on:
   schedule:
-    # UTC 23:30 = 台灣 07:30
-    - cron: "30 23 * * *"
+    - cron: "30 23 * * *" # 台灣 07:30
   workflow_dispatch:
 
 jobs:
@@ -20,12 +19,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # Step: 將 Google JSON Key 寫入暫時檔
-      - name: Write Google Service Account Key
-        run: echo "${{ secrets.GOOGLE_API_KEY }}" > service_account.json
-
       - name: Run daily coach
         env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
