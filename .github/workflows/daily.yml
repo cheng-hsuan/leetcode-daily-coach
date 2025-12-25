@@ -10,6 +10,12 @@ jobs:
   run:
     runs-on: ubuntu-latest
 
+    env:  # <- 全域環境變數
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      EMAIL_USER: ${{ secrets.EMAIL_USER }}
+      EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+      EMAIL_TO: ${{ secrets.EMAIL_TO }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -18,15 +24,9 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Run daily coach
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          EMAIL_USER: ${{ secrets.EMAIL_USER }}
-          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
         run: |
           python scripts/fetch_daily.py
           python scripts/generate_thoughts.py
