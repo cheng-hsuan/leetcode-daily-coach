@@ -1,22 +1,29 @@
+import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import json
-import os
 
-with open("daily.json", encoding="utf-8") as f:
-    daily = json.load(f)
+# ===== 環境變數 =====
+EMAIL_USER = os.environ["EMAIL_USER"]
+EMAIL_PASS = os.environ["EMAIL_PASS"]
+EMAIL_TO = os.environ["EMAIL_TO"]
 
-with open("thoughts.md", encoding="utf-8") as f:
+# ===== 讀取內容 =====
+with open("thoughts.md", "r", encoding="utf-8") as f:
     body = f.read()
 
+# ===== Email 組裝 =====
 msg = MIMEMultipart()
-msg["From"] = os.environ["EMAIL_USER"]
-msg["To"] = os.environ["EMAIL_TO"]
-msg["Subject"] = f"[LeetCode Daily] {daily['question']['difficulty']}｜{daily['question']['title']}"
+msg["From"] = EMAIL_USER
+msg["To"] = EMAIL_TO
+msg["Subject"] = "📘 LeetCode Daily Coach"
 
 msg.attach(MIMEText(body, "plain", "utf-8"))
 
-with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-    server.login(os.environ["EMAIL_USER"], os.environ["EMAIL_PASS"])
-    server.send_message(msg)
+# ===== SMTP (Gmail) =====
+server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+server.login(EMAIL_USER, EMAIL_PASS)
+server.send_message(msg)
+server.quit()
+
+print("✅ Email sent successfully")
