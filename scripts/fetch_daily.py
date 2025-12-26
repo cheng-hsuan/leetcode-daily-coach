@@ -7,6 +7,7 @@ query questionOfToday {
     date
     link
     question {
+    questionFrontendId
       title
       titleSlug
       difficulty
