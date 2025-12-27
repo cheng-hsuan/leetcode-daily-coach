@@ -10,7 +10,7 @@ EMAIL_PASS = os.environ["EMAIL_PASS"]
 EMAIL_TO = os.environ["EMAIL_TO"]
 
 # ===== 讀取內容 =====
-with open("thoughts.md", "r", encoding="utf-8") as f:
+with open("thoughts.txt", "r", encoding="utf-8") as f:
     body = f.read()
 
 # ===== 讀取每日題目 =====
