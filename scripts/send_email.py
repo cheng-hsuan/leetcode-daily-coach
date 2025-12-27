@@ -23,6 +23,11 @@ msg["From"] = EMAIL_USER
 msg["To"] = EMAIL_TO
 msg["Subject"] = f"📘 LeetCode Daily Coach {daily['question']['questionFrontendId']}. {daily['question']['title']}"
 
+# 在郵件內容最前面加入題目連結
+link = daily['link']
+url = f"https://leetcode.com{link}"
+body = f"Link: {url}\n\n" + body
+
 msg.attach(MIMEText(body, "plain", "utf-8"))
 
 # ===== SMTP (Gmail) =====
