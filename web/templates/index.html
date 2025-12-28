@@ -725,7 +725,7 @@
 
         // Load problem on Enter in problem ID input
         problemIdInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !e.isComposing) {
                 e.preventDefault();
                 loadProblem();
             }
@@ -746,8 +746,9 @@
         });
 
         // Send on Enter (Shift+Enter for new line)
+        // 使用 isComposing 判斷是否在 IME 輸入法組字中（如注音）
         inputField.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
                 e.preventDefault();
                 sendMessage();
             }
