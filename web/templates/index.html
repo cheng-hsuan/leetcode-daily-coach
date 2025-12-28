@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Coach - LeetCode 解題助手</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-java: #f89820;
+            --accent-kotlin: #7f52ff;
+            --accent-python: #3776ab;
+            --accent-current: var(--accent-python);
+            --user-bubble: #1f6feb;
+            --assistant-bubble: #21262d;
+            --difficulty-easy: #00b8a3;
+            --difficulty-medium: #ffc01e;
+            --difficulty-hard: #ff375f;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(ellipse at top left, rgba(127, 82, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(55, 118, 171, 0.08) 0%, transparent 50%);
+        }
+
+        /* Header */
+        .header {
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-current), var(--accent-python));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .logo-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 1.1rem;
+            letter-spacing: -0.5px;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .problem-input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .problem-input-group label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .problem-id-input {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            width: 80px;
+            padding: 0.4rem 0.6rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .problem-id-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .problem-id-input:focus {
+            outline: none;
+            border-color: var(--accent-current);
+        }
+
+        .load-btn {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.75rem;
+            background: var(--accent-current);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .load-btn:hover:not(:disabled) {
+            filter: brightness(1.15);
+        }
+
+        .load-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .language-select {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .language-select:hover {
+            border-color: var(--accent-current);
+        }
+
+        .language-select:focus {
+            outline: none;
+            border-color: var(--accent-current);
+        }
+
+        .clear-btn {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.75rem;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .clear-btn:hover {
+            border-color: #f85149;
+            color: #f85149;
+            background: rgba(248, 81, 73, 0.1);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Problem Panel */
+        .problem-panel {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            max-height: 35vh;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .problem-panel.visible {
+            display: block;
+        }
+
+        .problem-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .problem-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .problem-panel::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        .problem-header {
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 10;
+        }
+
+        .problem-title {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .problem-title a {
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .problem-title a:hover {
+            text-decoration: underline;
+        }
+
+        .difficulty-badge {
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .difficulty-badge.easy {
+            background: rgba(0, 184, 163, 0.15);
+            color: var(--difficulty-easy);
+        }
+
+        .difficulty-badge.medium {
+            background: rgba(255, 192, 30, 0.15);
+            color: var(--difficulty-medium);
+        }
+
+        .difficulty-badge.hard {
+            background: rgba(255, 55, 95, 0.15);
+            color: var(--difficulty-hard);
+        }
+
+        .problem-content {
+            padding: 1rem 1.5rem;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .problem-content pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            background: var(--bg-primary);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .problem-content code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            background: rgba(110, 118, 129, 0.2);
+            padding: 0.15rem 0.35rem;
+            border-radius: 4px;
+        }
+
+        .problem-content pre code {
+            background: none;
+            padding: 0;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        .message {
+            max-width: 85%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+        }
+
+        .message-bubble {
+            padding: 0.875rem 1.125rem;
+            border-radius: 16px;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .message.user .message-bubble {
+            background: var(--user-bubble);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-bubble {
+            background: var(--assistant-bubble);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-bubble pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            background: var(--bg-primary);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .message-bubble code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            background: rgba(110, 118, 129, 0.2);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        .message-bubble pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--accent-current);
+        }
+
+        .copy-btn.copied {
+            color: var(--difficulty-easy);
+            border-color: var(--difficulty-easy);
+        }
+
+        /* Welcome Message */
+        .welcome {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .welcome h2 {
+            font-size: 1.4rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome p {
+            font-size: 0.9rem;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        .welcome .hint {
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .welcome .hint code {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-tertiary);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        /* Typing Indicator */
+        .typing {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: bounce 1.4s ease-in-out infinite;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-6px);
+            }
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(13, 17, 23, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .loading-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-current);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 0.75rem 1.5rem 1rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 0.75rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .input-field {
+            flex: 1;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 0.95rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            resize: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-field::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-current);
+            box-shadow: 0 0 0 3px rgba(127, 82, 255, 0.15);
+        }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--accent-current);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .send-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Language-specific accent colors */
+        body.lang-java {
+            --accent-current: var(--accent-java);
+        }
+
+        body.lang-kotlin {
+            --accent-current: var(--accent-kotlin);
+        }
+
+        body.lang-python3 {
+            --accent-current: var(--accent-python);
+        }
+
+        body.lang-java .logo-icon {
+            background: linear-gradient(135deg, var(--accent-java), #e87c00);
+        }
+
+        body.lang-kotlin .logo-icon {
+            background: linear-gradient(135deg, var(--accent-kotlin), #c953ff);
+        }
+
+        body.lang-python3 .logo-icon {
+            background: linear-gradient(135deg, var(--accent-python), #ffd43b);
+        }
+    </style>
+</head>
+<body class="lang-python3">
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">💻</div>
+            <span class="logo-text">Code Coach</span>
+        </div>
+        <div class="controls">
+            <div class="problem-input-group">
+                <label>題目 #</label>
+                <input type="text" class="problem-id-input" id="problem-id-input" placeholder="e.g. 1">
+                <button class="load-btn" id="load-btn">載入</button>
+            </div>
+            <select class="language-select" id="language-select">
+                <option value="Python3">Python3</option>
+                <option value="Java">Java</option>
+                <option value="Kotlin">Kotlin</option>
+            </select>
+            <button class="clear-btn" id="clear-btn">重置</button>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <!-- Problem Panel -->
+        <div class="problem-panel" id="problem-panel">
+            <div class="problem-header">
+                <span class="problem-title" id="problem-title">
+                    <a href="#" target="_blank" id="problem-link">Loading...</a>
+                </span>
+                <span class="difficulty-badge" id="difficulty-badge">Easy</span>
+            </div>
+            <div class="problem-content" id="problem-content"></div>
+        </div>
+
+        <!-- Chat Container -->
+        <main class="chat-container" id="chat-container">
+            <div class="welcome" id="welcome">
+                <h2>👋 歡迎使用 Code Coach</h2>
+                <p>載入 LeetCode 題目，AI 會自動產生可提交的解法，並可以繼續對話討論</p>
+                <div class="hint">
+                    輸入題目編號（如 <code>1</code>、<code>121</code>）或直接點擊「載入」使用今日題目
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="input-area">
+        <div class="input-wrapper">
+            <textarea 
+                class="input-field" 
+                id="input-field" 
+                placeholder="輸入問題繼續討論..."
+                rows="1"
+            ></textarea>
+            <button class="send-btn" id="send-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+    </footer>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loading-text">載入題目中...</div>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const inputField = document.getElementById('input-field');
+        const sendBtn = document.getElementById('send-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const loadBtn = document.getElementById('load-btn');
+        const languageSelect = document.getElementById('language-select');
+        const problemIdInput = document.getElementById('problem-id-input');
+        const problemPanel = document.getElementById('problem-panel');
+        const problemTitle = document.getElementById('problem-title');
+        const problemLink = document.getElementById('problem-link');
+        const difficultyBadge = document.getElementById('difficulty-badge');
+        const problemContent = document.getElementById('problem-content');
+        const welcome = document.getElementById('welcome');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingText = document.getElementById('loading-text');
+
+        let isLoading = false;
+        let currentQuestion = null;
+
+        // Auto-resize textarea
+        inputField.addEventListener('input', () => {
+            inputField.style.height = 'auto';
+            inputField.style.height = Math.min(inputField.scrollHeight, 120) + 'px';
+        });
+
+        // Language change
+        languageSelect.addEventListener('change', (e) => {
+            const lang = e.target.value.toLowerCase();
+            document.body.className = `lang-${lang}`;
+        });
+
+        // Load problem on Enter in problem ID input
+        problemIdInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                loadProblem();
+            }
+        });
+
+        // Load button
+        loadBtn.addEventListener('click', loadProblem);
+
+        // Clear/reset
+        clearBtn.addEventListener('click', async () => {
+            await fetch('/clear', { method: 'POST' });
+            chatContainer.innerHTML = '';
+            chatContainer.appendChild(welcome);
+            welcome.style.display = 'block';
+            problemPanel.classList.remove('visible');
+            problemIdInput.value = '';
+            currentQuestion = null;
+        });
+
+        // Send on Enter (Shift+Enter for new line)
+        inputField.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        sendBtn.addEventListener('click', sendMessage);
+
+        async function loadProblem() {
+            if (isLoading) return;
+
+            const problemId = problemIdInput.value.trim();
+            
+            showLoading('載入題目中...');
+
+            try {
+                // Fetch problem (daily or by ID)
+                const url = problemId ? `/api/question/${problemId}` : '/api/daily';
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (!data.success) {
+                    hideLoading();
+                    alert(data.error || '無法載入題目');
+                    return;
+                }
+
+                currentQuestion = data.question;
+                displayProblem(currentQuestion);
+
+                // Update problem ID input with loaded problem
+                problemIdInput.value = currentQuestion.questionFrontendId;
+
+                // Clear previous chat
+                chatContainer.innerHTML = '';
+                welcome.style.display = 'none';
+
+                // Generate solution
+                updateLoadingText('AI 正在產生解法...');
+
+                const solutionResponse = await fetch('/api/solution', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: currentQuestion,
+                        language: languageSelect.value
+                    })
+                });
+
+                const solutionData = await solutionResponse.json();
+                hideLoading();
+
+                if (solutionData.success) {
+                    addMessage(solutionData.solution, 'assistant');
+                } else {
+                    addMessage('抱歉，無法產生解法：' + solutionData.error, 'assistant');
+                }
+
+            } catch (error) {
+                hideLoading();
+                alert('載入失敗：' + error.message);
+            }
+        }
+
+        function displayProblem(question) {
+            problemLink.textContent = `${question.questionFrontendId}. ${question.title}`;
+            problemLink.href = question.link;
+
+            const difficulty = question.difficulty.toLowerCase();
+            difficultyBadge.textContent = question.difficulty;
+            difficultyBadge.className = `difficulty-badge ${difficulty}`;
+
+            problemContent.innerHTML = question.content;
+            problemPanel.classList.add('visible');
+        }
+
+        function showLoading(text) {
+            isLoading = true;
+            loadBtn.disabled = true;
+            sendBtn.disabled = true;
+            loadingText.textContent = text;
+            loadingOverlay.classList.add('visible');
+        }
+
+        function updateLoadingText(text) {
+            loadingText.textContent = text;
+        }
+
+        function hideLoading() {
+            isLoading = false;
+            loadBtn.disabled = false;
+            sendBtn.disabled = false;
+            loadingOverlay.classList.remove('visible');
+        }
+
+        async function sendMessage() {
+            const message = inputField.value.trim();
+            if (!message || isLoading) return;
+
+            if (!currentQuestion) {
+                alert('請先載入題目');
+                return;
+            }
+
+            // Hide welcome
+            welcome.style.display = 'none';
+
+            // Add user message
+            addMessage(message, 'user');
+            inputField.value = '';
+            inputField.style.height = 'auto';
+
+            // Show typing indicator
+            isLoading = true;
+            sendBtn.disabled = true;
+            const typingEl = showTyping();
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        language: languageSelect.value
+                    })
+                });
+
+                const data = await response.json();
+                typingEl.remove();
+
+                if (data.success) {
+                    addMessage(data.message, 'assistant');
+                } else {
+                    addMessage('抱歉，發生錯誤：' + data.error, 'assistant');
+                }
+            } catch (error) {
+                typingEl.remove();
+                addMessage('抱歉，連線發生錯誤', 'assistant');
+            }
+
+            isLoading = false;
+            sendBtn.disabled = false;
+        }
+
+        function addMessage(content, role) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble';
+            bubbleDiv.innerHTML = formatMessage(content);
+            
+            messageDiv.appendChild(bubbleDiv);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Add copy buttons to code blocks
+            bubbleDiv.querySelectorAll('pre').forEach(pre => {
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn';
+                copyBtn.textContent = '複製';
+                copyBtn.onclick = () => {
+                    const code = pre.querySelector('code').textContent;
+                    navigator.clipboard.writeText(code).then(() => {
+                        copyBtn.textContent = '已複製!';
+                        copyBtn.classList.add('copied');
+                        setTimeout(() => {
+                            copyBtn.textContent = '複製';
+                            copyBtn.classList.remove('copied');
+                        }, 2000);
+                    });
+                };
+                pre.appendChild(copyBtn);
+            });
+        }
+
+        function formatMessage(content) {
+            // Escape HTML
+            content = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            
+            // Extract code blocks first and replace with placeholders
+            const codeBlocks = [];
+            content = content.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
+                const index = codeBlocks.length;
+                codeBlocks.push(code.trim());
+                return `__CODE_BLOCK_${index}__`;
+            });
+            
+            // Inline code
+            content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
+            
+            // Bold
+            content = content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            
+            // Line breaks (only for non-code content)
+            content = content.replace(/\n/g, '<br>');
+            
+            // Restore code blocks (keeping newlines intact for copy)
+            codeBlocks.forEach((code, index) => {
+                content = content.replace(`__CODE_BLOCK_${index}__`, `<pre><code>${code}</code></pre>`);
+            });
+            
+            return content;
+        }
+
+        function showTyping() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing';
+            typingDiv.innerHTML = `
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                思考中...
+            `;
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return typingDiv;
+        }
+    </script>
+</body>
+</html>
