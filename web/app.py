@@ -1,4 +1,6 @@
 import os
+import webbrowser
+from threading import Timer
 import requests
 from flask import Flask, render_template, request, jsonify, session
 from google import genai
@@ -262,6 +264,12 @@ def clear():
     return jsonify({"success": True})
 
 
+def open_browser():
+    webbrowser.open("http://localhost:5000")
+
+
 if __name__ == "__main__":
     print("🚀 Starting Code Coach at http://localhost:5000")
-    app.run(debug=True, port=5000)
+    # 延遲 1 秒後自動開啟瀏覽器
+    Timer(1, open_browser).start()
+    app.run(debug=True, port=5000, use_reloader=False)

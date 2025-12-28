@@ -111,7 +111,7 @@ export EMAIL_TO="user1@gmail.com,user2@gmail.com,user3@gmail.com"
 python web/app.py
 ```
 
-啟動後，打開瀏覽器訪問 http://localhost:5000
+啟動後會自動開啟瀏覽器到 http://localhost:5000
 
 ### 功能特色
 
